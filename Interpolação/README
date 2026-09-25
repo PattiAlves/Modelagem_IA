@@ -1,1 +1,1 @@
-
+Interpolação dos dados de maré obtidos da estação Recreio dos Bandeirantes com uso de Spline cúbica e de dados de precipitação da estaçao Recreio dos Bandeirantes convertendo o volume acumulado no intervalo original em intensidade (mm/h) e, em seguida, redistribuindo essa intensidade para a nova grade temporal de 10 minutos, garantindo que o volume total de chuva permaneça rigorosamente igual.

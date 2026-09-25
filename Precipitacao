@@ -1,0 +1,35 @@
+import pandas as pd
+
+# 1. Carregar os dados de chuva do arquivo Excel
+# Substitua 'chuva_horaria.xlsx' pelo nome do seu arquivo
+# Certifique-se de que a coluna de data/hora se chama 'datetime' e a coluna de acumulado de 1h se chama 'precip_1h'
+df_chuva = pd.read_excel('chuva_horaria.xlsx', parse_dates=['datetime'])
+
+# Garantir ordenação cronológica e definir o datetime como índice
+df_chuva = df_chuva.set_index('datetime').sort_index()
+
+# 2. Definir a nova grade temporal de 10 minutos a partir da data solicitada
+data_inicio = pd.to_datetime('2010-07-14 17:00:00')
+data_fim = df_chuva.index.max()
+nova_grade = pd.date_range(start=data_inicio, end=data_fim, freq='10min')
+
+# 3. Conversão da série horária para a grade de 10 minutos
+# Passo A: Reindexar para a grade de 10 minutos interpolando linearmente os valores entre as horas
+chuva_horaria_interpolada = (
+    df_chuva['precip_1h'].reindex(nova_grade).interpolate(method='linear').fillna(0)
+)
+
+# Passo B: Dividir por 6 (já que 1 hora = 6 blocos de 10 minutos)
+# para converter o acumulado de 1h na proporção correta para cada intervalo de 10 min
+chuva_10min = chuva_horaria_interpolada / 6.0
+
+# 4. Montar o DataFrame final com a chuva proporcional a cada 10 minutos
+df_chuva_10min = pd.DataFrame(
+    {'datetime': nova_grade, 'precip_10min': chuva_10min}
+).reset_index(drop=True)
+
+# Visualizar as primeiras linhas do resultado
+print(df_chuva_10min.head(15))
+
+# Opcional: Salvar o resultado em um novo arquivo Excel
+df_chuva_10min.to_excel('chuva_10min.xlsx', index=False)

@@ -1,150 +1,161 @@
+<div align="center">
+
 # Reconstrução do nível da Lagoa de Jacarepaguá com aprendizado de máquina
 
-[![Open Notebook 1 in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PattiAlves/Modelagem_IA/blob/main/notebooks/01_tratamento_dados.ipynb)
+**Chuva, maré e nível lagunar como base para um índice de resiliência urbana à inundação na bacia do Rio das Pedras (RJ)**
 
-Banco de dados de chuva, maré e nível da lagoa como base para um índice de resiliência urbana à inundação na bacia do Rio das Pedras (Rio de Janeiro), desenvolvido na disciplina **EQM2118 – Modelagem Matemática com Aplicação de Inteligência Artificial**.
+![Disciplina](https://img.shields.io/badge/EQM2118-PUC--Rio-0F2831)
+![Python](https://img.shields.io/badge/Python-pandas%20%7C%20SciPy-2A6F8F?logo=python&logoColor=white)
+![Status](https://img.shields.io/badge/status-Trabalho%201%20em%20andamento-E39A52)
 
-## Apresentação do Trabalho
+<a href="https://youtu.be/KPCK3wu9cNU">
+  <img src="https://img.youtube.com/vi/KPCK3wu9cNU/hqdefault.jpg" alt="Vídeo de apresentação do Trabalho 1" width="480">
+</a>
 
-A apresentação em vídeo do **Trabalho 1** está disponível no YouTube.
+*Clique na imagem para assistir à apresentação do Trabalho 1 no YouTube*
 
-[![Assistir à apresentação no YouTube](https://img.youtube.com/vi/KPCK3wu9cNU/hqdefault.jpg)](https://youtu.be/KPCK3wu9cNU)
+</div>
 
-▶ **[Assistir à apresentação no YouTube](https://youtu.be/KPCK3wu9cNU)**
+---
 
-## Executar o projeto
+### Sumário
 
-Os arquivos `.ipynb` são notebooks executáveis. No GitHub eles são exibidos de forma estática; para executar as células, utilize o botão **Open in Colab** acima.
+[Sobre o projeto](#sobre-o-projeto) · [Estudo de caso](#estudo-de-caso) · [Dados](#dados) · [Fluxo metodológico](#fluxo-metodológico) · [Scripts](#scripts) · [Banco de dados](#banco-de-dados) · [Escolhas metodológicas](#escolhas-metodológicas) · [Roteiro](#roteiro) · [Equipe](#equipe)
 
-No Google Colab, os notebooks utilizam o Google Drive como área de trabalho, na pasta:
+---
 
-```text
-/content/drive/MyDrive/Modelagem_IA
-```
+## Sobre o projeto
 
-Os arquivos brutos devem ser colocados em `data/raw/` dentro dessa pasta. Como as séries de 10 minutos ao longo de vários anos são volumosas, os dados não são versionados no GitHub.
+O ponto de partida é o **Índice de Resiliência Urbana à Inundação (IRUI)**, que avalia cada célula de uma bacia em três dimensões:
 
-Para execução local, as dependências estão em [`requirements.txt`](requirements.txt):
+| Antes da inundação | Durante | Depois |
+|:---:|:---:|:---:|
+| **Absorção** | **Enfrentamento** | **Recuperação e adaptação** |
+
+Parte dos indicadores do índice, como áreas inundáveis e redes de drenagem, depende diretamente do nível d’água. No Rio das Pedras, esse nível responde também à lagoa e à maré, mas a lagoa só foi medida entre 2010 e 2017.
+
+> **Objetivo:** reconstruir, por imputação com aprendizado de máquina, a série do nível da lagoa nos períodos sem medição, a partir das séries de chuva e maré, e correlacioná-la às cotas de inundação simuladas na bacia.
+
+> [!NOTE]
+> Este repositório corresponde ao **Trabalho 1**: análise crítica da base de dados e tratamento das séries. O treinamento do modelo vem na etapa seguinte, e a aplicação do IRUI ao Rio das Pedras é um trabalho futuro.
+
+## Estudo de caso
+
+| Extensão do rio | População da bacia | Exutório |
+|:---:|:---:|:---:|
+| ~5,5 km | ~67 mil habitantes | Sistema lagunar de Jacarepaguá |
+
+A bacia ocupa um antigo brejo aterrado, plano e mal drenado, na Baixada de Jacarepaguá. Ali se sobrepõem três fontes de inundação: a chuva sobre uma área muito impermeabilizada, o transbordamento do canal e a oscilação da lagoa e da maré, que alaga a bacia mesmo sem chuva.
+
+> [!IMPORTANT]
+> **Premissa:** as lagoas de Jacarepaguá e da Tijuca são conectadas; considera-se que ambas seguem o mesmo nível d’água.
+
+## Dados
+
+- **Precipitação** — Alerta Rio, Estação Jacarepaguá/Cidade de Deus · série contínua no período de estudo
+- **Nível de maré** — BNDO/CHM (Marinha do Brasil), Estação Recreio dos Bandeirantes · série contínua no período de estudo
+- **Nível da lagoa** — Rio-Águas, Estação Rede Sarah · medições a cada 10 min, de 14/07/2010 a 16/09/2017
+
+As planilhas não são versionadas neste repositório.
+
+## Fluxo metodológico
+
+| **3.1** Obtenção e tratamento | | **3.2** Treino e validação | | **3.3** Reconstrução e consistência | | **3.4** Correlação |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| chuva · maré · lagoa em 10 min | ➜ | Random Forest Regressor | ➜ | imputação da lagoa e checagem física | ➜ | Spearman com as cotas de inundação |
+| 🟠 em andamento | | ⚪ a fazer | | ⚪ a fazer | | ⚪ a fazer |
+
+## Scripts
+
+Os scripts em Python ficam na pasta [`Interpolação`](Interpola%C3%A7%C3%A3o) e levam as séries de chuva e maré para a grade de 10 minutos da lagoa.
+
+#### 🌊 [`Maré`](Interpola%C3%A7%C3%A3o/Mar%C3%A9)
+
+Interpolação por **spline cúbica** (`scipy.interpolate.CubicSpline`) da série da Estação Recreio dos Bandeirantes.
+`Maré_jul10.xlsx` ➜ `maré_10min.xlsx`
+
+#### 🌧️ [`Precipitação`](Interpola%C3%A7%C3%A3o/Precipita%C3%A7%C3%A3o)
+
+Conversão do acumulado horário da Estação Jacarepaguá/Cidade de Deus para 10 minutos, por **interpolação linear entre as horas seguida da divisão por 6**.
+`chuva_horaria.xlsx` ➜ `chuva_10min.xlsx`
+
+Os procedimentos estão descritos em [`Interpolação/README`](Interpola%C3%A7%C3%A3o/README). Uma versão preliminar do banco consolidado, com 2.486 registros (14 a 31/07/2010), foi usada para validar o procedimento.
+
+<details>
+<summary><b>Como executar</b></summary>
+
+<br>
+
+**No Google Colab** (já possui `pandas`, `numpy`, `scipy` e `openpyxl`):
+
+1. abra um novo notebook no [Google Colab](https://colab.research.google.com/);
+2. envie a planilha de entrada pelo painel **Arquivos**;
+3. cole o conteúdo do script em uma célula e execute;
+4. baixe a planilha de saída pelo mesmo painel.
+
+**Localmente:**
 
 ```bash
-pip install -r requirements.txt
+pip install pandas numpy scipy openpyxl
 ```
 
-## Contexto do projeto
+</details>
 
-A pesquisa que motiva este trabalho é o **Índice de Resiliência Urbana à Inundação (IRUI)**, que avalia a resiliência de cada célula de uma bacia em três dimensões: absorção, enfrentamento, e recuperação e adaptação. Parte dos indicadores do índice, como áreas inundáveis e redes de drenagem, depende diretamente do nível d’água.
+## Banco de dados
 
-Na bacia do Rio das Pedras, esse nível é condicionado não apenas pela chuva, mas também pela dinâmica da lagoa e da maré: a oscilação da lagoa alaga a bacia mesmo sem chuva. No entanto, o nível da lagoa só foi medido entre julho de 2010 e setembro de 2017, enquanto chuva e maré possuem séries contínuas.
+Série temporal em passo de 10 minutos.
 
-O objetivo é **reconstruir, por imputação com aprendizado de máquina, a série do nível da lagoa nos períodos sem medição**, a partir das séries de chuva e maré, e **correlacioná-la às cotas de inundação simuladas** na bacia do Rio das Pedras.
-
-Nesta fase, correspondente ao **Trabalho 1**, o foco está na análise crítica da base de dados, no tratamento e na consolidação das séries. O treinamento do modelo será realizado na etapa seguinte. A aplicação do IRUI à bacia do Rio das Pedras é um trabalho futuro.
-
-## Área de estudo
-
-O Rio das Pedras, com cerca de 5,5 km de extensão, fica na Baixada de Jacarepaguá e deságua no sistema lagunar de Jacarepaguá. A bacia tem cerca de 67 mil habitantes e ocupa um antigo brejo aterrado, plano e mal drenado.
-
-**Premissa adotada:** as lagoas de Jacarepaguá e da Tijuca são conectadas; considera-se que ambas seguem o mesmo nível d’água.
-
-## Fonte dos dados
-
-| Variável | Fonte | Estação | Disponibilidade |
+| Coluna | Descrição | Origem | Função |
 |---|---|---|---|
-| Precipitação | Alerta Rio | Jacarepaguá/Cidade de Deus | Série contínua no período de estudo |
-| Nível de maré | BNDO/CHM (Marinha do Brasil) | Recreio dos Bandeirantes | Série contínua no período de estudo |
-| Nível da lagoa | Rio-Águas | Rede Sarah | 14/07/2010 a 16/09/2017, a cada 10 min |
+| `datetime` | Data e hora | — | Índice temporal |
+| `precip_10min` | Chuva convertida para 10 min | Alerta Rio | 🔹 Preditor |
+| `nivel_mare_10min` | Maré interpolada | BNDO/CHM | 🔹 Preditor |
+| `lagoa_10min` | Nível da Lagoa de Jacarepaguá | Rio-Águas | 🎯 Variável-alvo |
+| `id_evento` | Evento de chuva simulado | MODCEL | 🔸 Correlação *(a incluir)* |
+| `lamina_celula_<id>` | Cota de inundação nas células selecionadas | MODCEL | 🔸 Correlação *(a incluir)* |
 
-## Tratamento dos dados
+## Escolhas metodológicas
 
-As três séries foram compatibilizadas na frequência de 10 minutos, que é a da lagoa:
+Legenda: ✅ aplicada · ⏳ prevista ou a definir · ➖ não aplicada
 
-1. **Maré:** interpolação por spline cúbica (`scipy.interpolate.CubicSpline`);
-2. **Precipitação:** redistribuição proporcional do acumulado horário nos seis intervalos de 10 minutos;
-3. **Consolidação:** união das séries pela coluna `datetime` e auditoria do banco (duplicatas, lacunas e valores faltantes).
+| | Técnica | Por quê |
+|:---:|---|---|
+| ✅ | Compatibilização temporal | As séries têm resoluções diferentes e precisam de uma grade comum de 10 min |
+| ✅ | Spline cúbica (maré) | A maré é um sinal contínuo e suave; a spline preserva a forma da curva |
+| ✅ | Conversão proporcional (chuva) | A chuva é intermitente; uma spline geraria oscilações e valores negativos |
+| ⏳ | Imputação de dados faltantes | É o objetivo central: reconstruir o nível da lagoa fora de 2010–2017 |
+| ⏳ | Detecção de outliers | Picos de sensor na lagoa devem ser avaliados frente a limites físicos |
+| ⏳ | Correlação de Spearman | Relação monotônica entre o nível da lagoa e as cotas de inundação |
+| ➖ | PCA | Há apenas dois preditores; reavaliar se forem criadas variáveis defasadas |
+| ➖ | SMOTE | O problema é de regressão, não de classificação desbalanceada |
+| ➖ | Divisão aleatória treino/teste | A ordem temporal deve ser preservada |
+| ➖ | Normalização | Árvores de decisão não dependem da escala; reavaliar se forem testados SVM ou redes neurais |
 
-O processo está documentado em:
+**Modelagem prevista:** Random Forest Regressor, com treino de 14/07/2010 a 13/07/2015 e teste de 14/07/2015 a 16/09/2017, avaliado por R², RMSE, MAE e eficiência de Nash-Sutcliffe (NSE).
 
-- [`notebooks/01_tratamento_dados.ipynb`](notebooks/01_tratamento_dados.ipynb)
-- [`outputs/reports/relatorio_tratamento_dados.md`](outputs/reports/relatorio_tratamento_dados.md) (gerado pelo notebook)
-
-Uma versão preliminar do banco consolidado, com 2.486 registros (14 a 31/07/2010), foi utilizada para validar o procedimento antes de estendê-lo ao período completo.
-
-## Estrutura do banco de dados
-
-| Coluna | Conteúdo | Origem | Papel no modelo |
-|---|---|---|---|
-| `datetime` | Data e hora, passo de 10 min | — | Índice temporal |
-| `precip_10min` | Chuva redistribuída em 10 min | Alerta Rio | Preditor |
-| `nivel_mare_10min` | Maré interpolada (spline cúbica) | BNDO/CHM | Preditor |
-| `lagoa_10min` | Nível da Lagoa de Jacarepaguá | Rio-Águas | Variável-alvo |
-| `id_evento` | Evento de chuva simulado | MODCEL | Correlação (a incluir) |
-| `lamina_celula_<id>` | Cota de inundação simulada nas células selecionadas | MODCEL | Correlação (a incluir) |
-
-## Decisões metodológicas
-
-Nem todas as técnicas estudadas na disciplina se aplicam a este problema. A escolha foi condicionada à natureza dos dados.
-
-| Técnica | Decisão | Justificativa |
-|---|---|---|
-| Compatibilização temporal (data wrangling) | Aplicada | As séries têm resoluções diferentes e precisam de uma grade comum de 10 min |
-| Interpolação por spline cúbica | Aplicada à maré | A maré é um sinal contínuo e suave; a spline preserva a forma da curva |
-| Redistribuição proporcional | Aplicada à chuva | A chuva é intermitente; uma spline geraria oscilações e valores negativos |
-| Imputação de dados faltantes | Objetivo central | O nível da lagoa só tem medição entre 2010 e 2017; a imputação por regressão reconstrói os demais anos |
-| Detecção de outliers | A definir na auditoria | Picos de sensor no nível da lagoa devem ser avaliados frente a limites físicos |
-| PCA (redução de dimensionalidade) | Não aplicada nesta fase | Há apenas dois preditores; reavaliar caso sejam criadas variáveis defasadas |
-| SMOTE | Não aplicado | O problema é de regressão, não de classificação desbalanceada |
-| Divisão aleatória treino/teste | Não aplicada | A ordem temporal deve ser preservada |
-| Normalização | Não necessária para Random Forest | Modelos baseados em árvores não dependem da escala; reavaliar se forem testados SVM ou redes neurais |
-| Correlação de Spearman | Prevista | Relação monotônica entre o nível da lagoa e as cotas de inundação |
-
-## Preparação experimental
-
-O modelo de regressão será um **Random Forest Regressor**, com divisão temporal:
-
-- **Treino:** 14/07/2010 a 13/07/2015;
-- **Teste:** 14/07/2015 a 16/09/2017.
-
-As métricas previstas são **R², RMSE, MAE e eficiência de Nash-Sutcliffe (NSE)**.
-
-## Estrutura do repositório
+## Organização do repositório
 
 ```text
 Modelagem_IA/
 ├── README.md
-├── requirements.txt
-├── .gitignore
-├── notebooks/
-│   └── 01_tratamento_dados.ipynb
-├── data/
-│   ├── raw/
-│   ├── interim/
-│   └── processed/
-└── outputs/
-    ├── reports/
-    ├── figures/
-    ├── tables/
-    └── presentations/
-        └── README.md
+└── Interpolação/
+    ├── README          # descrição dos procedimentos de interpolação
+    ├── Maré            # script Python: spline cúbica da maré
+    └── Precipitação    # script Python: conversão da chuva para 10 min
 ```
 
-## Próximas etapas
+## Roteiro
 
-1. **Treino e validação:** treinamento do Random Forest Regressor e avaliação no período de teste;
-2. **Reconstrução e consistência:** imputação do nível da lagoa nos períodos sem medição e verificação frente à batimetria e às cotas de transbordamento;
-3. **Correlação:** correlação de Spearman entre a série reconstruída e as cotas de inundação simuladas no modelo quasi-2D (MODCEL), quantificando o efeito de remanso.
+- [x] Conversão das séries de chuva e maré para 10 minutos
+- [ ] Consolidação do banco e auditoria de duplicatas, lacunas e faltantes
+- [ ] Treinamento e validação do Random Forest Regressor
+- [ ] Reconstrução da série da lagoa e análise de consistência física
+- [ ] Correlação de Spearman com as cotas de inundação do MODCEL
 
-## Trabalhos futuros
+**Desdobramentos futuros:** aplicar o IRUI ao Rio das Pedras com o indicador da lagoa atualizado e transpor o método para outras bacias sob influência de lagoa e maré, como a da Lagoa Rodrigo de Freitas e o centro histórico de Paraty.
 
-- Aplicar o IRUI à bacia do Rio das Pedras, com o indicador da lagoa atualizado pela série reconstruída;
-- Transpor o método para outras bacias onde lagoa e maré influenciam as inundações, como a bacia da Lagoa Rodrigo de Freitas e o centro histórico de Paraty.
+## Equipe
 
-## Autoras
-
-- Carolina Lopes
-- Patrícia Alves
-
-## Disciplina
-
-**EQM2118 – Modelagem Matemática com Aplicação de Inteligência Artificial**  
-Professor: **Brunno Ferreira dos Santos**  
-PUC-Rio
+| Autoras | Disciplina | Professor |
+|---|---|---|
+| Carolina Lopes<br>Patrícia Alves | EQM2118 – Modelagem Matemática com Aplicação de Inteligência Artificial · PUC-Rio | Brunno Ferreira dos Santos |

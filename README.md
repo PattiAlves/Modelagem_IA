@@ -142,6 +142,11 @@ Modelagem_IA/
     ├── README          # descrição dos procedimentos de interpolação
     ├── Maré            # script Python: spline cúbica da maré
     └── Precipitação    # script Python: conversão da chuva para 10 min
+└── Notebooks/
+    ├── Modelagem       # script Python: Tratamento e análise de dados
+    ├── Treinamento     # script Python: Treinamento de modelo e teste
+    ├── Reconstrução    # script Python: Reconstrução da série de dados de nível da Lagoa
+    ├── Correlação      # script Python: Correlação de Spearman entre os dados de nível da lagoa e cotas de inundação
 ```
 
 ## Roteiro

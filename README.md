@@ -163,4 +163,4 @@ Modelagem_IA/
 
 | Autoras | Disciplina | Professor |
 |---|---|---|
-| Carolina Lopes<br>Patrícia Alves | EQM2118 – Modelagem Matemática com Aplicação de Inteligência Artificial · PUC-Rio | Brunno Ferreira dos Santos |
+| Carolina Lopes<br>Patricia Alves | EQM2118 – Modelagem Matemática com Aplicação de Inteligência Artificial · PUC-Rio | Brunno Ferreira dos Santos |
